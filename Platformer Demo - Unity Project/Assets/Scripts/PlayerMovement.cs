@@ -143,7 +143,7 @@ public class PlayerMovement : MonoBehaviour
 					|| (Physics2D.OverlapBox(_backWallCheckPoint.position, _wallCheckSize, 0, _groundLayer) && !IsFacingRight)) && !IsWallJumping)
 				LastOnWallRightTime = Data.coyoteTime;
 
-			//Right Wall Check
+			//Left Wall Check
 			if (((Physics2D.OverlapBox(_frontWallCheckPoint.position, _wallCheckSize, 0, _groundLayer) && !IsFacingRight)
 				|| (Physics2D.OverlapBox(_backWallCheckPoint.position, _wallCheckSize, 0, _groundLayer) && IsFacingRight)) && !IsWallJumping)
 				LastOnWallLeftTime = Data.coyoteTime;
@@ -345,22 +345,30 @@ public class PlayerMovement : MonoBehaviour
 	{
 		//Calculate the direction we want to move in and our desired velocity
 		float targetSpeed = _moveInput.x * Data.runMaxSpeed;
-		//We can reduce are control using Lerp() this smooths changes to are direction and speed
+
+		//We can reduce our control using Lerp() this smooths changes to our direction and speed
 		targetSpeed = Mathf.Lerp(RB.velocity.x, targetSpeed, lerpAmount);
+
 
 		#region Calculate AccelRate
 		float accelRate;
 
 		//Gets an acceleration value based on if we are accelerating (includes turning) 
 		//or trying to decelerate (stop). As well as applying a multiplier if we're air borne.
-		if (LastOnGroundTime > 0)
+		if (LastOnGroundTime > 0){
+			//Ground
+			//Debug.Log("accelRate: " + accelRate);
 			accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? Data.runAccelAmount : Data.runDeccelAmount;
-		else
+		}
+			
+		else{
+			//Air
 			accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? Data.runAccelAmount * Data.accelInAir : Data.runDeccelAmount * Data.deccelInAir;
+		}
 		#endregion
 
 		#region Add Bonus Jump Apex Acceleration
-		//Increase are acceleration and maxSpeed when at the apex of their jump, makes the jump feel a bit more bouncy, responsive and natural
+		//Increase our acceleration and maxSpeed when at the apex of their jump, makes the jump feel a bit more bouncy, responsive and natural
 		if ((IsJumping || IsWallJumping || _isJumpFalling) && Mathf.Abs(RB.velocity.y) < Data.jumpHangTimeThreshold)
 		{
 			accelRate *= Data.jumpHangAccelerationMult;
@@ -372,7 +380,7 @@ public class PlayerMovement : MonoBehaviour
 		//We won't slow the player down if they are moving in their desired direction but at a greater speed than their maxSpeed
 		if(Data.doConserveMomentum && Mathf.Abs(RB.velocity.x) > Mathf.Abs(targetSpeed) && Mathf.Sign(RB.velocity.x) == Mathf.Sign(targetSpeed) && Mathf.Abs(targetSpeed) > 0.01f && LastOnGroundTime < 0)
 		{
-			//Prevent any deceleration from happening, or in other words conserve are current momentum
+			//Prevent any deceleration from happening, or in other words conserve our current momentum
 			//You could experiment with allowing for the player to slightly increae their speed whilst in this "state"
 			accelRate = 0; 
 		}
